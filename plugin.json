@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.2",
   "title": "rrows.net static pages",
   "description": "Hosts standalone static long-reads on rrows.net. Currently serves \"Who Told You That Was True?\" at /who-told-you/."
 }

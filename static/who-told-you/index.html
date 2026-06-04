@@ -1344,7 +1344,7 @@
   <p class="colophon">
     <span class="site"><a href="https://rrows.net">rrows.net</a></span>
     <span class="tagline">Where structured data meets wandering thoughts &middot; technology, economics and society</span>
-    <span class="reply"><a href="https://rrows.net/reply-by-email/">✍️ Reply by email</a></span>
+    <span class="reply"><a id="replyEmail" href="https://rrows.net/reply-by-email/">✍️ Reply by email</a></span>
     <span class="copy">&copy; 2026 Tony Stevenson</span>
   </p>
 
@@ -1526,6 +1526,14 @@
         e.preventDefault();
         navigator.share({ title: POST_TITLE, text: SHARE_TEXT, url: POST_URL }).catch(function(){});
       });
+    }
+
+    /* Reply by email: assemble the address in JS so the raw HTML has no full email */
+    var replyEmail = document.getElementById("replyEmail");
+    if (replyEmail) {
+      var rUser = "dissent_outings.3b";
+      var rDomain = "icloud" + "." + "com";
+      replyEmail.href = "mailto:" + rUser + "@" + rDomain + "?subject=" + enc("Re: " + POST_TITLE);
     }
 
     /* ── Image lightbox (click figure to enlarge) ── */
