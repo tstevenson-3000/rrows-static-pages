@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2",
+  "version": "1.1.0",
   "title": "rrows.net static pages",
-  "description": "Hosts standalone static long-reads on rrows.net. Currently serves \"Who Told You That Was True?\" at /who-told-you/."
+  "description": "Hosts standalone static long-reads on rrows.net (e.g. \"Who Told You That Was True?\" at /who-told-you/) and self-hosted web fonts at /fonts/ (Literata woff2 for the Palim reading skin)."
 }
