@@ -2,6 +2,13 @@
 <html lang="en-AU">
 <head>
 <meta charset="utf-8">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-3ZG0LSPB27"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-3ZG0LSPB27');
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ABC Top 100 Australian books: sortable list and shortlist</title>
 <meta name="description" content="The ABC Radio National Top 100 Australian books, with year, genre and a short blurb. Sort, filter, tick a shortlist, print it and find each book at your local library.">
@@ -28,26 +35,26 @@ button.primary:hover{filter:brightness(1.08)}
 button:disabled{opacity:.45;cursor:not-allowed}
 :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 .tablewrap{border:1px solid var(--rule);border-radius:8px;background:#fff;overflow:hidden}
-table{width:100%;border-collapse:collapse}
-thead th{position:sticky;top:0;background:var(--panel);text-align:left;font-weight:600;font-size:.82rem;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);padding:0;border-bottom:1px solid var(--rule);z-index:2}
-thead th button{all:unset;display:block;width:100%;padding:10px 10px;cursor:pointer;box-sizing:border-box}
-thead th button:hover{color:var(--ink)}
-thead th button:focus-visible{outline:3px solid var(--focus);outline-offset:-3px}
-thead th.static{padding:10px}
-thead th button{white-space:nowrap}
-th .arrow{display:inline-block;width:1em;color:var(--accent)}
-tbody td{padding:10px;border-bottom:1px solid var(--rule);vertical-align:top;font-size:.95rem}
-tbody tr:last-child td{border-bottom:0}
-tbody tr.sel{background:var(--sel)}
-td.rank{font-variant-numeric:tabular-nums;color:var(--muted);width:3.2rem}
-td.chk{width:2.6rem;text-align:center}
-td.chk input{width:20px;height:20px;accent-color:var(--accent);cursor:pointer}
-td.title .t{font-weight:600}
-td.title .b{display:block;color:var(--muted);font-size:.86rem;margin-top:3px;max-width:34rem}
-td.year{font-variant-numeric:tabular-nums;white-space:nowrap}
-td.genre{white-space:nowrap;font-size:.85rem;color:var(--muted)}
-td.find{white-space:nowrap;font-size:.85rem}
-td.find a{color:var(--accent);margin-right:8px;text-decoration:underline;text-underline-offset:2px}
+#tbl{width:100%;border-collapse:collapse}
+#tbl thead th{position:sticky;top:0;background:var(--panel);text-align:left;font-weight:600;font-size:.82rem;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);padding:0;border-bottom:1px solid var(--rule);z-index:2}
+#tbl thead th button{all:unset;display:block;width:100%;padding:10px 10px;cursor:pointer;box-sizing:border-box}
+#tbl thead th button:hover{color:var(--ink)}
+#tbl thead th button:focus-visible{outline:3px solid var(--focus);outline-offset:-3px}
+#tbl thead th.static{padding:10px}
+#tbl thead th button{white-space:nowrap}
+#tbl th .arrow{display:inline-block;width:1em;color:var(--accent)}
+#tbl tbody td{padding:10px;border-bottom:1px solid var(--rule);vertical-align:top;font-size:.95rem}
+#tbl tbody tr:last-child td{border-bottom:0}
+#tbl tbody tr.sel{background:var(--sel)}
+#tbl td.rank{font-variant-numeric:tabular-nums;color:var(--muted);width:3.2rem}
+#tbl td.chk{width:2.6rem;text-align:center}
+#tbl td.chk input{width:20px;height:20px;accent-color:var(--accent);cursor:pointer}
+#tbl td.title .t{font-weight:600}
+#tbl td.title .b{display:block;color:var(--muted);font-size:.86rem;margin-top:3px;max-width:34rem}
+#tbl td.year{font-variant-numeric:tabular-nums;white-space:nowrap}
+#tbl td.genre{white-space:nowrap;font-size:.85rem;color:var(--muted)}
+#tbl td.find{white-space:nowrap;font-size:.85rem}
+#tbl td.find a{color:var(--accent);margin-right:8px;text-decoration:underline;text-underline-offset:2px}
 .empty{padding:28px;text-align:center;color:var(--muted)}
 .bar{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--rule);padding:10px 16px;z-index:5;box-shadow:0 -4px 14px rgba(0,0,0,.06)}
 .bar .in{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -56,31 +63,37 @@ td.find a{color:var(--accent);margin-right:8px;text-decoration:underline;text-un
 .toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 14px;border-radius:6px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
 .toast.show{opacity:1}
 #printSheet{display:none}
+.sr{position:absolute;left:-9999px}
 @media (max-width:760px){
-  thead{display:none}
-  table,tbody,tr,td{display:block;width:100%}
-  tbody tr{display:grid;grid-template-columns:2.6rem 1fr;border-bottom:1px solid var(--rule);padding:8px 0}
-  tbody td{border:0;padding:2px 10px}
-  td.chk{grid-row:1 / span 5;grid-column:1;padding-top:6px}
-  td.rank,td.title,td.author,td.year,td.genre,td.find{grid-column:2;width:auto}
-  td.rank{font-size:.8rem}
-  td.year,td.genre{display:inline}
-  td.title .b{max-width:none}
+  #tbl thead{display:none}
+  #tbl,#tbl tbody,#tbl tr,#tbl td{display:block;width:100%}
+  #tbl tbody tr{display:grid;grid-template-columns:2.6rem 1fr;border-bottom:1px solid var(--rule);padding:8px 0}
+  #tbl tbody td{border:0;padding:2px 10px}
+  #tbl td.chk{grid-row:1 / span 5;grid-column:1;padding-top:6px}
+  #tbl td.rank,#tbl td.title,#tbl td.author,#tbl td.year,#tbl td.genre,#tbl td.find{grid-column:2;width:auto}
+  #tbl td.rank{font-size:.8rem}
+  #tbl td.year,#tbl td.genre{display:inline}
+  #tbl td.title .b{max-width:none}
   .count{margin-left:0;width:100%}
 }
-.sr{position:absolute;left:-9999px}
+@page{margin:0}
 @media print{
-  body{background:#fff}
-  .bar,.toast,.controls,.note,td.chk,thead th.static:first-child{display:none!important}
-  thead th{position:static}
-  tbody tr{break-inside:avoid}
+  html,body{background:#fff}
+  body{padding:15mm}
+  .bar,.toast,.controls,.note,#tbl td.chk,#tbl thead th.static:first-child{display:none!important}
+  #tbl thead th{position:static}
+  #tbl tbody tr{break-inside:avoid}
   body.print-shortlist .wrap{display:none!important}
   body.print-shortlist #printSheet{display:block!important}
-  #printSheet h1{font-size:1.5rem}
-  #printSheet table{font-size:11pt}
-  #printSheet td,#printSheet th{padding:6px 8px;border-bottom:1px solid #bbb;text-align:left;vertical-align:top}
-  #printSheet td.box{width:1.4rem;font-size:14pt}
-  #printSheet .sub{color:#555;font-size:9.5pt}
+  #printSheet{font-size:11pt;color:#000}
+  #printSheet h1{font-size:20pt;margin:0 0 4pt}
+  #printSheet .sub{color:#555;font-size:9.5pt;margin:0 0 10pt}
+  #printSheet .item{display:grid;grid-template-columns:9mm 1fr;gap:0 4mm;padding:7pt 0;border-top:1px solid #bbb;break-inside:avoid}
+  #printSheet .item:last-child{border-bottom:1px solid #bbb}
+  #printSheet .box{font-size:15pt;line-height:1}
+  #printSheet .ttl{font-weight:700;font-size:12pt}
+  #printSheet .meta{color:#444;font-size:9.5pt;margin-top:1pt}
+  #printSheet .bl{color:#333;font-size:9.5pt;margin-top:3pt}
 }
 </style>
 </head>
@@ -227,8 +240,11 @@ const DATA = [{"rank": 1, "title": "Cloudstreet", "author": "Tim Winton", "year"
   $("reset").addEventListener("click",()=>{state.key="rank";state.dir=1;state.q="";state.genre="";state.only=false;$("q").value="";$("genre").value="";$("onlySel").setAttribute("aria-pressed","false");$("onlySel").textContent="Show shortlist only";render();});
   $("clear").addEventListener("click",()=>{if(state.sel.size&&confirm("Clear your shortlist?")){state.sel.clear();persist();render();}});
 
+  function gbooks(b){return links(b)[0][1];}
+  function fullLinks(b){const l=links(b);return {g:l[0][1],t:l[1][1],w:l[2][1]};}
+
   $("copy").addEventListener("click",()=>{
-    const txt=chosen().map(b=>b.rank+". "+b.title+" - "+b.author+" ("+b.year+")").join("\n");
+    const txt=chosen().map(b=>b.rank+". "+b.title+" - "+b.author+" ("+b.year+", "+b.genre+")\n   "+b.blurb+"\n   Google Books: "+gbooks(b)).join("\n\n");
     const done=()=>toast("Shortlist copied");
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,()=>fallback(txt,done));}else fallback(txt,done);
   });
@@ -236,8 +252,9 @@ const DATA = [{"rank": 1, "title": "Cloudstreet", "author": "Tim Winton", "year"
 
   $("csv").addEventListener("click",()=>{
     const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
-    const lines=[["Rank","Title","Author","Year","Genre"].join(",")].concat(chosen().map(b=>[b.rank,q(b.title),q(b.author),b.year,q(b.genre)].join(",")));
-    const blob=new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
+    const head=["Rank","Title","Author","Year","Genre","Blurb","Google Books","Trove","WorldCat"].join(",");
+    const lines=[head].concat(chosen().map(b=>{const l=fullLinks(b);return [b.rank,q(b.title),q(b.author),b.year,q(b.genre),q(b.blurb),q(l.g),q(l.t),q(l.w)].join(",");}));
+    const blob=new Blob(["\ufeff"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="abc-top-100-shortlist.csv";document.body.appendChild(a);a.click();document.body.removeChild(a);
     setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   });
@@ -245,16 +262,16 @@ const DATA = [{"rank": 1, "title": "Cloudstreet", "author": "Tim Winton", "year"
   $("print").addEventListener("click",()=>{
     const ps=$("printSheet");ps.textContent="";
     ps.appendChild(el("h1",null,"My reading shortlist"));
-    ps.appendChild(el("p","sub","From the ABC Radio National Top 100 Australian books. Printed "+new Date().toLocaleDateString("en-AU",{day:"numeric",month:"long",year:"numeric"})+"."));
-    const t=document.createElement("table"),h=document.createElement("tr");
-    ["","Rank","Title","Author","Year"].forEach(x=>h.appendChild(el("th",null,x)));
-    const th=document.createElement("thead");th.appendChild(h);t.appendChild(th);
-    const tb=document.createElement("tbody");
-    chosen().forEach(b=>{const r=document.createElement("tr");
-      r.appendChild(el("td","box","☐"));r.appendChild(el("td",null,b.rank));
-      const c=el("td",null,null);c.appendChild(el("strong",null,b.title));c.appendChild(document.createElement("br"));c.appendChild(el("span","sub",b.genre));r.appendChild(c);
-      r.appendChild(el("td",null,b.author));r.appendChild(el("td",null,b.year));tb.appendChild(r);});
-    t.appendChild(tb);ps.appendChild(t);
+    ps.appendChild(el("p","sub","From the ABC Radio National Top 100 Australian books. "+state.sel.size+(state.sel.size===1?" book":" books")+". Printed "+new Date().toLocaleDateString("en-AU",{day:"numeric",month:"long",year:"numeric"})+"."));
+    chosen().forEach(b=>{
+      const row=el("div","item");
+      row.appendChild(el("div","box","\u2610"));
+      const c=el("div",null,null);
+      c.appendChild(el("div","ttl",b.rank+". "+b.title));
+      c.appendChild(el("div","meta",b.author+" - "+b.year+" - "+b.genre));
+      c.appendChild(el("div","bl",b.blurb));
+      row.appendChild(c);ps.appendChild(row);
+    });
     document.body.classList.add("print-shortlist");
     window.addEventListener("afterprint",()=>document.body.classList.remove("print-shortlist"),{once:true});
     window.print();
