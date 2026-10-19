@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ABC Top 100 Australian books: sortable list and shortlist</title>
+<meta name="description" content="The ABC Radio National Top 100 Australian books, with year, genre and a short blurb. Sort, filter, tick a shortlist, print it and find each book at your local library.">
+<style>
+:root{
+  --bg:#FDFAF4; --panel:#F6F1E6; --ink:#2b2620; --muted:#6d6558; --rule:#e3dccb;
+  --accent:#8a3b12; --accent-ink:#fff; --focus:#1b5fa8; --sel:#fff3d6;
+}
+*{box-sizing:border-box}
+html{color-scheme:light}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Literata,Georgia,"Times New Roman",serif;line-height:1.5;hyphens:none;-webkit-hyphens:none}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 16px 120px}
+h1{font-weight:400;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.15;margin:0 0 .4rem}
+.lede{color:var(--muted);max-width:46rem;margin:0 0 1.2rem}
+.lede a{color:var(--accent)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 12px}
+.controls input[type=search],.controls select{font:inherit;font-size:.95rem;padding:8px 10px;border:1px solid var(--rule);border-radius:6px;background:#fff;color:var(--ink)}
+.controls input[type=search]{flex:1 1 220px;min-width:180px}
+.count{color:var(--muted);font-size:.9rem;margin-left:auto}
+button,.btn{font:inherit;font-size:.9rem;padding:8px 12px;border:1px solid var(--rule);border-radius:6px;background:#fff;color:var(--ink);cursor:pointer}
+button:hover{background:var(--panel)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button.primary:hover{filter:brightness(1.08)}
+button:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.tablewrap{border:1px solid var(--rule);border-radius:8px;background:#fff;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{position:sticky;top:0;background:var(--panel);text-align:left;font-weight:600;font-size:.82rem;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);padding:0;border-bottom:1px solid var(--rule);z-index:2}
+thead th button{all:unset;display:block;width:100%;padding:10px 10px;cursor:pointer;box-sizing:border-box}
+thead th button:hover{color:var(--ink)}
+thead th button:focus-visible{outline:3px solid var(--focus);outline-offset:-3px}
+thead th.static{padding:10px}
+thead th button{white-space:nowrap}
+th .arrow{display:inline-block;width:1em;color:var(--accent)}
+tbody td{padding:10px;border-bottom:1px solid var(--rule);vertical-align:top;font-size:.95rem}
+tbody tr:last-child td{border-bottom:0}
+tbody tr.sel{background:var(--sel)}
+td.rank{font-variant-numeric:tabular-nums;color:var(--muted);width:3.2rem}
+td.chk{width:2.6rem;text-align:center}
+td.chk input{width:20px;height:20px;accent-color:var(--accent);cursor:pointer}
+td.title .t{font-weight:600}
+td.title .b{display:block;color:var(--muted);font-size:.86rem;margin-top:3px;max-width:34rem}
+td.year{font-variant-numeric:tabular-nums;white-space:nowrap}
+td.genre{white-space:nowrap;font-size:.85rem;color:var(--muted)}
+td.find{white-space:nowrap;font-size:.85rem}
+td.find a{color:var(--accent);margin-right:8px;text-decoration:underline;text-underline-offset:2px}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--rule);padding:10px 16px;z-index:5;box-shadow:0 -4px 14px rgba(0,0,0,.06)}
+.bar .in{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.bar .n{font-weight:600;margin-right:auto}
+.note{color:var(--muted);font-size:.85rem;max-width:46rem;margin:14px 0 0}
+.toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 14px;border-radius:6px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
+.toast.show{opacity:1}
+#printSheet{display:none}
+@media (max-width:760px){
+  thead{display:none}
+  table,tbody,tr,td{display:block;width:100%}
+  tbody tr{display:grid;grid-template-columns:2.6rem 1fr;border-bottom:1px solid var(--rule);padding:8px 0}
+  tbody td{border:0;padding:2px 10px}
+  td.chk{grid-row:1 / span 5;grid-column:1;padding-top:6px}
+  td.rank,td.title,td.author,td.year,td.genre,td.find{grid-column:2;width:auto}
+  td.rank{font-size:.8rem}
+  td.year,td.genre{display:inline}
+  td.title .b{max-width:none}
+  .count{margin-left:0;width:100%}
+}
+.sr{position:absolute;left:-9999px}
+@media print{
+  body{background:#fff}
+  .bar,.toast,.controls,.note,td.chk,thead th.static:first-child{display:none!important}
+  thead th{position:static}
+  tbody tr{break-inside:avoid}
+  body.print-shortlist .wrap{display:none!important}
+  body.print-shortlist #printSheet{display:block!important}
+  #printSheet h1{font-size:1.5rem}
+  #printSheet table{font-size:11pt}
+  #printSheet td,#printSheet th{padding:6px 8px;border-bottom:1px solid #bbb;text-align:left;vertical-align:top}
+  #printSheet td.box{width:1.4rem;font-size:14pt}
+  #printSheet .sub{color:#555;font-size:9.5pt}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ABC Top 100 Australian books</h1>
+  <p class="lede">The countdown from <a href="https://www.abc.net.au/listen/radionational/countdown/top100books/1-100">ABC Radio National</a>, with year, genre and a short blurb added. Click a column heading to sort, tick the books you want to read to build a shortlist, then print it or take it to your library. Ranks, titles and authors are the ABC's; the rest is mine. Notes and sources are in the <a href="https://rrows.net/">rrows.net</a> post.</p>
+
+  <div class="controls" role="search">
+    <input type="search" id="q" placeholder="Search title, author, genre or blurb" aria-label="Search the list">
+    <select id="genre" aria-label="Filter by genre"><option value="">All genres</option></select>
+    <button type="button" id="onlySel" aria-pressed="false">Show shortlist only</button>
+    <button type="button" id="reset">Reset</button>
+    <span class="count" id="count" aria-live="polite"></span>
+  </div>
+
+  <div class="tablewrap">
+    <table id="tbl">
+      <thead><tr>
+        <th class="static" scope="col" style="width:2.6rem"><span class="sr">Pick</span></th>
+        <th scope="col" aria-sort="ascending"><button type="button" data-k="rank">Rank <span class="arrow"></span></button></th>
+        <th scope="col"><button type="button" data-k="title">Title <span class="arrow"></span></button></th>
+        <th scope="col"><button type="button" data-k="author">Author <span class="arrow"></span></button></th>
+        <th scope="col"><button type="button" data-k="year">Year <span class="arrow"></span></button></th>
+        <th scope="col"><button type="button" data-k="genre">Genre <span class="arrow"></span></button></th>
+        <th class="static" scope="col">Find a copy</th>
+      </tr></thead>
+      <tbody id="body"></tbody>
+    </table>
+    <div class="empty" id="empty" hidden>No books match. Try clearing the search or genre filter.</div>
+  </div>
+
+  <p class="note"><strong>Find a copy:</strong> <em>Google Books</em> shows editions and previews. <em>Trove</em> searches the National Library of Australia's catalogue, which lists copies held by Australian libraries. <em>WorldCat</em> shows libraries near you worldwide. Many public libraries also lend ebooks and audiobooks through Libby or BorrowBox, so search for the title there as well. Years are first publication dates.</p>
+</div>
+
+<div class="bar" role="region" aria-label="Shortlist">
+  <div class="in">
+    <span class="n" id="selN">Shortlist: 0 books</span>
+    <button type="button" id="print" class="primary" disabled>Print shortlist</button>
+    <button type="button" id="copy" disabled>Copy as text</button>
+    <button type="button" id="csv" disabled>Download CSV</button>
+    <button type="button" id="clear" disabled>Clear</button>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<div id="printSheet" aria-hidden="true"></div>
+
+<script>
+const DATA = [{"rank": 1, "title": "Cloudstreet", "author": "Tim Winton", "year": 1991, "genre": "Literary fiction", "blurb": "Two working-class families, the Lambs and the Pickles, share a rambling Perth house for twenty years after the war. Luck, grief and stubborn love tangle through a funny, magical family saga."}, {"rank": 2, "title": "The Book Thief", "author": "Markus Zusak", "year": 2005, "genre": "Historical fiction", "blurb": "Narrated by Death, this is the story of Liesel, a foster girl in Nazi Germany who steals books and shares them with her neighbours and a Jewish man hidden in her basement."}, {"rank": 3, "title": "Boy Swallows Universe", "author": "Trent Dalton", "year": 2018, "genre": "Literary fiction", "blurb": "Brisbane in the 1980s. Young Eli Bell navigates a violent, magical suburban childhood with a mute brother, a notorious criminal mentor and a mother he would do anything for."}, {"rank": 4, "title": "Burial Rites", "author": "Hannah Kent", "year": 2013, "genre": "Historical fiction", "blurb": "In 1829 Iceland, Agnes Magnúsdóttir awaits execution for murder while billeted on a farming family. Her story emerges slowly and unsettles everything the household thinks it knows about her."}, {"rank": 5, "title": "A Fortunate Life", "author": "A.B. Facey", "year": 1981, "genre": "Memoir", "blurb": "An unschooled farm worker's plain-spoken account of a hard life: an orphaned childhood, Gallipoli, the Depression and personal loss, told with remarkable gratitude."}, {"rank": 6, "title": "Tomorrow, When the War Began", "author": "John Marsden", "year": 1993, "genre": "Young adult", "blurb": "Seven teenagers return from a camping trip to find their town occupied by foreign invaders. They must decide whether to run, hide or fight back."}, {"rank": 7, "title": "The Dictionary of Lost Words", "author": "Pip Williams", "year": 2020, "genre": "Historical fiction", "blurb": "Esme, daughter of an Oxford English Dictionary lexicographer, secretly collects words the male editors reject, especially those used by women, as suffrage and the First World War approach."}, {"rank": 8, "title": "The Narrow Road to the Deep North", "author": "Richard Flanagan", "year": 2013, "genre": "Historical fiction", "blurb": "Army surgeon Dorrigo Evans, a prisoner of war on the Burma Railway, is haunted by a lost love and the brutality he witnessed. Winner of the 2014 Booker Prize."}, {"rank": 9, "title": "The Secret River", "author": "Kate Grenville", "year": 2005, "genre": "Historical fiction", "blurb": "London convict William Thornhill is transported to New South Wales and claims land on the Hawkesbury, setting a settler's dream against the Aboriginal people already living there."}, {"rank": 10, "title": "The Dry", "author": "Jane Harper", "year": 2016, "genre": "Crime", "blurb": "Federal agent Aaron Falk returns to his drought-stricken home town for a friend's funeral and is drawn into a murder-suicide that reopens the unsolved death of a teenage girl."}, {"rank": 11, "title": "Possum Magic", "author": "Mem Fox and Julie Vivas", "year": 1983, "genre": "Children's picture book", "blurb": "Grandma Poss makes Hush invisible to keep her safe from snakes, then must find the food that will make her visible again, on a tour of Australian places and treats."}, {"rank": 12, "title": "Dark Emu", "author": "Bruce Pascoe", "year": 2014, "genre": "Non-fiction", "blurb": "Drawing on early colonial journals, Pascoe argues that Aboriginal people farmed, built and stored food, challenging the hunter-gatherer label. A contested but hugely influential reappraisal."}, {"rank": 13, "title": "Looking for Alibrandi", "author": "Melina Marchetta", "year": 1992, "genre": "Young adult", "blurb": "Josephine Alibrandi, from an Italian-Australian family in Sydney, juggles scholarship-school snobbery, an absent father, a formidable grandmother and first love in her final year."}, {"rank": 14, "title": "Year of Wonders", "author": "Geraldine Brooks", "year": 2001, "genre": "Historical fiction", "blurb": "In 1666 a Derbyshire village seals itself off when plague arrives. Housemaid Anna Frith becomes healer and witness as faith and fear tear the community apart."}, {"rank": 15, "title": "The Slap", "author": "Christos Tsiolkas", "year": 2008, "genre": "Literary fiction", "blurb": "At a Melbourne barbecue a man slaps a child who is not his own. Eight perspectives follow the fallout across class, ethnicity, marriage and friendship."}, {"rank": 16, "title": "Wild Dark Shore", "author": "Charlotte McConaghy", "year": 2025, "genre": "Literary fiction", "blurb": "On a remote island near Antarctica, home to a research station and seed vault, a family finds a shipwreck survivor washed ashore. Her arrival stirs secrets as the seas rise."}, {"rank": 17, "title": "Storm Boy", "author": "Colin Thiele", "year": 1963, "genre": "Children's fiction", "blurb": "A lonely boy living in the Coorong dunes with his father raises an orphaned pelican, Mr Percival, in a tender story of friendship, courage and loss."}, {"rank": 18, "title": "My Brilliant Career", "author": "Miles Franklin", "year": 1901, "genre": "Classic fiction", "blurb": "Headstrong, talented Sybylla Melvin grows up in rural New South Wales and refuses marriage and convention in favour of a writing life. An early landmark of Australian feminist fiction."}, {"rank": 19, "title": "Magic Beach", "author": "Alison Lester", "year": 2002, "genre": "Children's picture book", "blurb": "Rhyming verse follows children at the beach, where sandcastles, rock pools and imagination turn an ordinary day into an adventure."}, {"rank": 20, "title": "Wifedom", "author": "Anna Funder", "year": 2023, "genre": "Biography", "blurb": "Funder recovers Eileen O'Shaughnessy, George Orwell's first wife, arguing that her intellect and unpaid labour shaped his work. Part biography, part memoir, part polemic."}, {"rank": 21, "title": "My Place", "author": "Sally Morgan", "year": 1987, "genre": "Memoir", "blurb": "Morgan uncovers her family's hidden Aboriginal heritage in Western Australia, gathering her mother's and grandmother's testimony in a landmark of Indigenous life writing."}, {"rank": 22, "title": "The Australian Women's Weekly Children's Birthday Cake Book", "author": "Maryanne Blacker and Pamela Clark", "year": 1980, "genre": "Cookbook", "blurb": "Generations of Australians remember the swimming pool, castle and train cakes in this much-loved collection of novelty birthday cakes, with step-by-step instructions for anxious parents."}, {"rank": 23, "title": "Stasiland", "author": "Anna Funder", "year": 2002, "genre": "Non-fiction", "blurb": "Funder interviews former East Germans, victims and Stasi officers alike, to reveal how the secret police shaped daily life behind the Wall and what lingers after its fall."}, {"rank": 24, "title": "The Power of One", "author": "Bryce Courtenay", "year": 1989, "genre": "Historical fiction", "blurb": "Peekay, a boy in 1930s South Africa, survives boarding-school bullying and wartime prejudice through boxing, music and unlikely friendships. A bestselling coming-of-age epic."}, {"rank": 25, "title": "Seven Little Australians", "author": "Ethel Turner", "year": 1894, "genre": "Children's fiction", "blurb": "The mischievous Woolcot children of 1890s Sydney chafe against their strict father. An early Australian classic that mixes comedy with real heartbreak."}, {"rank": 26, "title": "Picnic at Hanging Rock", "author": "Joan Lindsay", "year": 1967, "genre": "Mystery", "blurb": "On Valentine's Day 1900, three schoolgirls and a teacher vanish during a picnic at Hanging Rock. An atmospheric Gothic puzzle that never offers a tidy solution."}, {"rank": 27, "title": "The Harp in the South", "author": "Ruth Park", "year": 1948, "genre": "Literary fiction", "blurb": "The Darcy family crowd into a Surry Hills slum house in 1940s Sydney, finding humour, grit and hope amid poverty, faith and family upheaval."}, {"rank": 28, "title": "Mad Mabel", "author": "Sally Hepworth", "year": 2025, "genre": "Mystery", "blurb": "Elsie Fitzpatrick, 81, finds a neighbour dead. The discovery exposes her past as Mabel Waller, convicted of murder at fifteen in 1959, and she decides to speak publicly."}, {"rank": 29, "title": "The Happiest Refugee", "author": "Anh Do", "year": 2010, "genre": "Memoir", "blurb": "Comedian Anh Do recounts fleeing Vietnam by boat as a child, surviving pirates and building a new life in Sydney, with humour and gratitude."}, {"rank": 30, "title": "My Brother Jack", "author": "George Johnston", "year": 1964, "genre": "Literary fiction", "blurb": "David Meredith, a Melbourne journalist, recalls growing up between the wars beside his rough-diamond brother Jack, weighing ambition and comfort against loyalty and mateship."}, {"rank": 31, "title": "Monkey Grip", "author": "Helen Garner", "year": 1977, "genre": "Literary fiction", "blurb": "In 1970s inner-city Melbourne, Nora falls repeatedly for the charming, heroin-addicted Javo in a raw, diaristic portrait of share-house life, desire and dependency."}, {"rank": 32, "title": "Animalia", "author": "Graeme Base", "year": 1986, "genre": "Children's picture book", "blurb": "An alphabet book of alliterative verse and densely detailed paintings, each page hiding objects, and a boy, for readers to find."}, {"rank": 33, "title": "Breath", "author": "Tim Winton", "year": 2008, "genre": "Literary fiction", "blurb": "On the Western Australian coast, two teenage boys chase bigger surf and riskier dares under the spell of an older mentor, with lasting consequences."}, {"rank": 34, "title": "The Rosie Project", "author": "Graeme Simsion", "year": 2013, "genre": "Romance", "blurb": "Socially awkward genetics professor Don Tillman designs a questionnaire to find the perfect wife, then meets Rosie, who has a project of her own. A warm romantic comedy."}, {"rank": 35, "title": "Lola in the Mirror", "author": "Trent Dalton", "year": 2023, "genre": "Literary fiction", "blurb": "Dalton's third novel follows Lola, a young artist who uses her art to interpret and survive a hard world, and the mother who shaped it."}, {"rank": 36, "title": "Limberlost", "author": "Robbie Arnott", "year": 2022, "genre": "Literary fiction", "blurb": "Ned West, on his family's Tasmanian apple orchard while his brothers are away at war, traps rabbits to buy a boat. A lyrical coming-of-age story of land and loss."}, {"rank": 37, "title": "I Can Jump Puddles", "author": "Alan Marshall", "year": 1955, "genre": "Memoir", "blurb": "Marshall recalls a rural Victorian boyhood after polio left him with weakened legs, refusing pity and claiming independence with humour and determination."}, {"rank": 38, "title": "Joe Cinque's Consolation", "author": "Helen Garner", "year": 2004, "genre": "True crime", "blurb": "Garner investigates the 1997 Canberra death of student Joe Cinque, poisoned by his girlfriend, and the dinner party at which friends failed to intervene."}, {"rank": 39, "title": "Big Little Lies", "author": "Liane Moriarty", "year": 2014, "genre": "Contemporary fiction", "blurb": "At a school trivia night in a beachside community, a death exposes the secrets of three mothers whose friendship and gossip hide something far darker."}, {"rank": 40, "title": "Oscar and Lucinda", "author": "Peter Carey", "year": 1988, "genre": "Literary fiction", "blurb": "An Anglican clergyman and an heiress, both compulsive gamblers, stake everything on transporting a glass church through the Australian wilderness. Winner of the 1988 Booker Prize."}, {"rank": 41, "title": "Dirt Music", "author": "Tim Winton", "year": 2001, "genre": "Literary fiction", "blurb": "In a Western Australian fishing town, poacher Luther Fox and the restless Georgie Jutland fall into a dangerous love that drives them north towards the Kimberley coast."}, {"rank": 42, "title": "The Complete Adventures of Snugglepot & Cuddlepie", "author": "May Gibbs", "year": 1918, "genre": "Children's fiction", "blurb": "Two gumnut babies adventure through the bush, helped by Ragged Blossom and menaced by the villainous Banksia Men."}, {"rank": 43, "title": "People of the Book", "author": "Geraldine Brooks", "year": 2008, "genre": "Historical fiction", "blurb": "Conservator Hanna Heath examines the Sarajevo Haggadah and finds small clues, a wine stain and an insect wing, that reveal centuries of the manuscript's rescue."}, {"rank": 44, "title": "True History of the Kelly Gang", "author": "Peter Carey", "year": 2000, "genre": "Historical fiction", "blurb": "Ned Kelly narrates his own life in a rough, vivid vernacular, addressed to the daughter he never met. Winner of the 2001 Booker Prize."}, {"rank": 45, "title": "All That I Am", "author": "Anna Funder", "year": 2011, "genre": "Historical fiction", "blurb": "Based on real people, German anti-Nazi activists in 1930s London are hunted by Hitler's agents. Memory, courage and betrayal unfold through the voices of two survivors."}, {"rank": 46, "title": "The Thorn Birds", "author": "Colleen McCullough", "year": 1977, "genre": "Romance", "blurb": "Across decades on a vast New South Wales sheep station, Meggie Cleary loves Father Ralph, a priest torn between ambition, faith and desire."}, {"rank": 47, "title": "Playing Beatie Bow", "author": "Ruth Park", "year": 1980, "genre": "Young adult", "blurb": "Modern teenager Abigail follows a strange child through Sydney's Rocks into the 1870s, where she uncovers a family's secret and her own heart."}, {"rank": 48, "title": "Where is the Green Sheep?", "author": "Mem Fox and Judy Horacek", "year": 2004, "genre": "Children's picture book", "blurb": "A rhythmic hunt through a flock of wonderfully varied sheep for the one that is missing, in a bedtime favourite for toddlers."}, {"rank": 49, "title": "The Female Eunuch", "author": "Germaine Greer", "year": 1970, "genre": "Non-fiction", "blurb": "Greer's polemic argues that women are conditioned to accept submission and suppress desire. A landmark of second-wave feminism that still provokes argument."}, {"rank": 50, "title": "Mao's Last Dancer", "author": "Li Cunxin", "year": 2003, "genre": "Memoir", "blurb": "A poor Chinese village boy is selected for the Beijing Dance Academy, then defects to the West and becomes a star of the ballet stage."}, {"rank": 51, "title": "The Light Between Oceans", "author": "M.L. Stedman", "year": 2012, "genre": "Historical fiction", "blurb": "Lighthouse keeper Tom Sherbourne and his wife Isabel, after miscarriages, keep a baby found in a drifting boat on the Western Australian coast, with devastating consequences."}, {"rank": 52, "title": "Horse", "author": "Geraldine Brooks", "year": 2022, "genre": "Historical fiction", "blurb": "The racehorse Lexington links an enslaved groom, a Smithsonian articulator and a modern art historian across two centuries of American race, art and obsession."}, {"rank": 53, "title": "Stone Yard Devotional", "author": "Charlotte Wood", "year": 2023, "genre": "Literary fiction", "blurb": "A woman retreats to a struggling convent on the Monaro, where a mouse plague, drought and the arrival of a relic unsettle her carefully ordered solitude."}, {"rank": 54, "title": "Schindler's Ark", "author": "Thomas Keneally", "year": 1982, "genre": "Historical fiction", "blurb": "A documentary novel of Oskar Schindler, the German industrialist who saved more than a thousand Jews from the Holocaust. Winner of the 1982 Booker Prize."}, {"rank": 55, "title": "The Magic Pudding", "author": "Norman Lindsay", "year": 1918, "genre": "Children's fiction", "blurb": "Bunyip Bluegum joins Bill Barnacle and Sam Sawnoff to guard Albert, the grumpy, endlessly renewable pudding, from scheming thieves."}, {"rank": 56, "title": "The Cook's Companion", "author": "Stephanie Alexander", "year": 1996, "genre": "Cookbook", "blurb": "An encyclopaedic A to Z of ingredients with recipes, techniques and advice. For three decades it has been a fixture of Australian kitchens."}, {"rank": 57, "title": "The Lost Flowers of Alice Hart", "author": "Holly Ringland", "year": 2018, "genre": "Literary fiction", "blurb": "After a fire, nine-year-old Alice goes to live with her grandmother on a flower farm and learns the secret language of Australian native flowers."}, {"rank": 58, "title": "The Yield", "author": "Tara June Winch", "year": 2019, "genre": "Literary fiction", "blurb": "Elder Albert Gondiwindi writes a dictionary of Wiradjuri words as his granddaughter returns home and a mining company threatens the land. Winner of the 2020 Miles Franklin Award."}, {"rank": 59, "title": "The Happiest Man on Earth", "author": "Eddie Jaku", "year": 2020, "genre": "Memoir", "blurb": "Holocaust survivor Eddie Jaku describes enduring Auschwitz and Buchenwald, then finding gratitude, kindness and joy in the life he rebuilt in Australia."}, {"rank": 60, "title": "The Man from Snowy River", "author": "Banjo Paterson", "year": 1890, "genre": "Poetry", "blurb": "A ballad of a young rider on a stockhorse who chases a runaway colt down a precipitous mountainside. Bush verse that became a national story."}, {"rank": 61, "title": "Too Much Lip", "author": "Melissa Lucashenko", "year": 2018, "genre": "Literary fiction", "blurb": "Kerry Salter, a Goorie woman on the run, heads home to see her dying grandfather and finds family, land and secrets. Sharp, funny, unvarnished. Winner of the 2019 Miles Franklin Award."}, {"rank": 62, "title": "Are We There Yet?", "author": "Alison Lester", "year": 2004, "genre": "Children's picture book", "blurb": "A family takes a year-long journey around Australia, and the illustrated diary captures the landscapes, wildlife and weary backseat moods along the way."}, {"rank": 63, "title": "Question 7", "author": "Richard Flanagan", "year": 2023, "genre": "Memoir", "blurb": "Flanagan braids his Tasmanian boyhood, his father's survival as a prisoner of war and the physicist Leo Szilard into a meditation on history, chance and memory."}, {"rank": 64, "title": "Damned Whores and God's Police", "author": "Anne Summers", "year": 1975, "genre": "Non-fiction", "blurb": "Summers argues that Australian women since colonisation have been cast as either damned whores or God's police. A foundational text of Australian feminism."}, {"rank": 65, "title": "Chai Time at Cinnamon Gardens", "author": "Shankari Chandran", "year": 2022, "genre": "Literary fiction", "blurb": "In a Sydney nursing home founded by Sri Lankan refugees, a missing husband and a racism complaint stir memories of civil war. Winner of the 2023 Miles Franklin Award."}, {"rank": 66, "title": "Carpentaria", "author": "Alexis Wright", "year": 2006, "genre": "Literary fiction", "blurb": "A mythic, darkly funny epic set on the Gulf of Carpentaria, where the Phantom family fights for land and survival against a mine and rival clans."}, {"rank": 67, "title": "Voss", "author": "Patrick White", "year": 1957, "genre": "Literary fiction", "blurb": "German explorer Johann Voss leads a doomed expedition across the Australian interior in 1845, bound by a near-mystical bond to Laura Trevelyan back in Sydney."}, {"rank": 68, "title": "Unreliable Memoirs", "author": "Clive James", "year": 1980, "genre": "Memoir", "blurb": "James's comic account of growing up fatherless in postwar Sydney. Self-mocking, ironic and extravagantly quotable."}, {"rank": 69, "title": "A Town Like Alice", "author": "Nevil Shute", "year": 1950, "genre": "Romance", "blurb": "Jean Paget survives a forced march in wartime Malaya with help from an Australian prisoner, then seeks him in the outback and builds a new town."}, {"rank": 70, "title": "Diary of a Wombat", "author": "Jackie French and Bruce Whatley", "year": 2002, "genre": "Children's picture book", "blurb": "A wombat records her days of sleeping, eating, digging and training the new human neighbours to supply carrots."}, {"rank": 71, "title": "The Tree of Man", "author": "Patrick White", "year": 1955, "genre": "Literary fiction", "blurb": "Stan and Amy Parker carve a farm from bush at the edge of Sydney. Across decades of fire, flood and ordinary grief, their lives gain epic stature."}, {"rank": 72, "title": "This House of Grief", "author": "Helen Garner", "year": 2014, "genre": "True crime", "blurb": "Garner follows the trial of Robert Farquharson, who drove his three sons into a dam on Father's Day 2005, and asks how a court weighs the unknowable."}, {"rank": 73, "title": "Scrublands", "author": "Chris Hammer", "year": 2018, "genre": "Crime", "blurb": "Journalist Martin Scarsden arrives in drought-stricken Riversend a year after a charismatic priest shot five parishioners, and starts asking questions the town does not want asked."}, {"rank": 74, "title": "The Fatal Shore", "author": "Robert Hughes", "year": 1986, "genre": "History", "blurb": "A sweeping, vivid history of the convict transportation system that founded Australia, from the First Fleet of 1787 to the 1860s."}, {"rank": 75, "title": "The Bookbinder of Jericho", "author": "Pip Williams", "year": 2023, "genre": "Historical fiction", "blurb": "In First World War Oxford, sisters Peggy and Tilly work in the bindery of the university press while the war changes everything around them."}, {"rank": 76, "title": "The Natural Way of Things", "author": "Charlotte Wood", "year": 2015, "genre": "Literary fiction", "blurb": "Ten young women, each shamed by scandal involving powerful men, wake imprisoned in a remote outback compound. A chilling, allegorical thriller about misogyny."}, {"rank": 77, "title": "The Broken Shore", "author": "Peter Temple", "year": 2005, "genre": "Crime", "blurb": "Damaged Melbourne detective Joe Cashin, back in his coastal home town, investigates the bashing of a wealthy man and the fate of three Aboriginal youths."}, {"rank": 78, "title": "Power Without Glory", "author": "Frank Hardy", "year": 1950, "genre": "Literary fiction", "blurb": "A thinly disguised portrait of Melbourne gambling and political powerbroker John Wren. Hardy was prosecuted for criminal libel over it."}, {"rank": 79, "title": "Johnno", "author": "David Malouf", "year": 1975, "genre": "Literary fiction", "blurb": "Narrator Dante looks back on his friendship with the charismatic, reckless Johnno in wartime and postwar Brisbane."}, {"rank": 80, "title": "For the Term of His Natural Life", "author": "Marcus Clarke", "year": 1874, "genre": "Historical fiction", "blurb": "Rufus Dawes, wrongly convicted, endures the brutality of the Van Diemen's Land penal settlements in an epic that shaped how Australians imagined the convict past."}, {"rank": 81, "title": "We of the Never Never", "author": "Mrs Aeneas Gunn", "year": 1908, "genre": "Memoir", "blurb": "Jeannie Gunn's warm account of a year on Elsey Station in the Northern Territory in 1902. A bush classic of outback life."}, {"rank": 82, "title": "Eucalyptus", "author": "Murray Bail", "year": 1998, "genre": "Literary fiction", "blurb": "Farmer Holland plants hundreds of eucalypt species and promises his daughter Ellen to any suitor who can name them all. A fable of obsession and love."}, {"rank": 83, "title": "Wombat Stew", "author": "Marcia K Vaughan and Pamela Lofts", "year": 1984, "genre": "Children's picture book", "blurb": "A hungry dingo plans to cook a wombat stew, but the bush animals have other ideas. A rhythmic, funny read-aloud."}, {"rank": 84, "title": "Shantaram", "author": "Gregory David Roberts", "year": 2003, "genre": "Adventure fiction", "blurb": "An escaped Australian prisoner hides in Bombay, where he runs a clinic in the slums and falls in with mafia, war and love. Loosely based on the author's life."}, {"rank": 85, "title": "The Dressmaker", "author": "Rosalie Ham", "year": 2000, "genre": "Contemporary fiction", "blurb": "Glamorous Tilly Dunnage returns to her outback home town of Dungatar to care for her mother and settle old scores with her couture."}, {"rank": 86, "title": "The Lost Man", "author": "Jane Harper", "year": 2018, "genre": "Crime", "blurb": "In the remote Queensland outback, brothers Nathan and Bub investigate the mysterious death of a third brother at the stockman's grave."}, {"rank": 87, "title": "The Trauma Cleaner", "author": "Sarah Krasnostein", "year": 2017, "genre": "Biography", "blurb": "A portrait of Sandra Pankhurst, who cleans homes left behind by death and hoarding, and whose own extraordinary life holds as many secrets."}, {"rank": 88, "title": "Juice", "author": "Tim Winton", "year": 2024, "genre": "Literary fiction", "blurb": "In a future Australia scorched by climate collapse, an unnamed narrator recalls a childhood spent half underground, then life as a recruit of a secret assassins' organisation."}, {"rank": 89, "title": "Edenglassie", "author": "Melissa Lucashenko", "year": 2023, "genre": "Historical fiction", "blurb": "Aboriginal and colonial lives collide in 1850s Brisbane, while a present-day story echoes and answers the past."}, {"rank": 90, "title": "Puberty Blues", "author": "Kathy Lette and Gabrielle Carey", "year": 1979, "genre": "Contemporary fiction", "blurb": "Two teenage girls in 1970s Sydney fight for respect in the male-dominated surf culture of the Cronulla beaches. Raw, funny and still talked about."}, {"rank": 91, "title": "Where the Forest Meets the Sea", "author": "Jeannie Baker", "year": 1987, "genre": "Children's picture book", "blurb": "A boy visiting the Daintree rainforest imagines its ancient past and threatened future, in intricate collage artwork."}, {"rank": 92, "title": "The Tall Man", "author": "Chloe Hooper", "year": 2008, "genre": "True crime", "blurb": "Hooper recounts the 2004 death of Cameron Doomadgee in a Palm Island police cell and the trial of Senior Sergeant Chris Hurley."}, {"rank": 93, "title": "The Man Who Loved Children", "author": "Christina Stead", "year": 1940, "genre": "Literary fiction", "blurb": "A domestic war between an egotistical, sentimental father and his exhausted wife plays out in a household of children in 1930s America."}, {"rank": 94, "title": "The Spare Room", "author": "Helen Garner", "year": 2008, "genre": "Literary fiction", "blurb": "Helen takes in her friend Nicola, who is in Melbourne for alternative cancer treatment, and friendship strains against denial, exhaustion and hope."}, {"rank": 95, "title": "The Museum of Modern Love", "author": "Heather Rose", "year": 2016, "genre": "Literary fiction", "blurb": "Inspired by Marina Abramović's 2010 performance at MoMA, a composer, a critic and a stranger find their lives changed by silent hours spent at her table."}, {"rank": 96, "title": "RecipeTin Eats: Dinner", "author": "Nagi Maehashi", "year": 2020, "genre": "Cookbook", "blurb": "One hundred and fifty weeknight recipes from the blogger behind RecipeTin Eats, with big flavours, reliable method and few fiddly steps."}, {"rank": 97, "title": "Devotion", "author": "Hannah Kent", "year": 2021, "genre": "Historical fiction", "blurb": "In early 19th-century Prussia, Hanne and her Lutheran family flee religious persecution for South Australia. Her bond with her friend Thea deepens on the voyage."}, {"rank": 98, "title": "The Arrival", "author": "Shaun Tan", "year": 2006, "genre": "Graphic novel", "blurb": "A wordless graphic novel in which a man leaves his family to find work in a strange new land. A moving, surreal portrait of the migrant experience."}, {"rank": 99, "title": "The 13-Storey Treehouse", "author": "Andy Griffiths and Terry Denton", "year": 2011, "genre": "Children's fiction", "blurb": "Andy and Terry live in a tree house with a bowling alley, shark tank and marshmallow machine. Chaos, silliness and a looming book deadline follow."}, {"rank": 100, "title": "Round the Twist", "author": "Paul Jennings", "year": 1990, "genre": "Children's fiction", "blurb": "Anarchic, gross-out stories of the Twist family and the strange things that happen around their lighthouse home."}];
+(function(){
+  "use strict";
+  const KEY="rrows-abc-top100-shortlist-2026";
+  const $=id=>document.getElementById(id);
+  const state={key:"rank",dir:1,q:"",genre:"",only:false,sel:new Set()};
+
+  try{const s=JSON.parse(localStorage.getItem(KEY)||"[]"); if(Array.isArray(s)) s.forEach(n=>{ if(Number.isInteger(n)) state.sel.add(n); });}catch(e){}
+  function persist(){try{localStorage.setItem(KEY,JSON.stringify([...state.sel]));}catch(e){}}
+
+  const enc=encodeURIComponent;
+  function firstAuthor(a){return a.split(/ and /)[0].replace(/^Mrs /,"");}
+  function links(b){
+    const q=enc(b.title+" "+firstAuthor(b.author));
+    return [
+      ["Google Books","https://www.google.com/search?tbm=bks&q="+q],
+      ["Trove","https://trove.nla.gov.au/search/category/books?keyword="+q],
+      ["WorldCat","https://search.worldcat.org/search?q="+q]
+    ];
+  }
+
+  // genre filter
+  [...new Set(DATA.map(b=>b.genre))].sort().forEach(g=>{const o=document.createElement("option");o.value=g;o.textContent=g;$("genre").appendChild(o);});
+
+  function visible(){
+    const q=state.q.trim().toLowerCase();
+    let rows=DATA.filter(b=>
+      (!state.genre||b.genre===state.genre) &&
+      (!state.only||state.sel.has(b.rank)) &&
+      (!q||(b.title+" "+b.author+" "+b.genre+" "+b.blurb+" "+b.year).toLowerCase().includes(q)));
+    const k=state.key,d=state.dir;
+    rows.sort((a,b)=>{
+      let x=a[k],y=b[k];
+      if(typeof x==="string"){x=x.replace(/^(the|a|an) /i,"").toLowerCase();y=y.replace(/^(the|a|an) /i,"").toLowerCase();}
+      const c = x<y?-1:x>y?1:0;
+      return (c||a.rank-b.rank)*d;
+    });
+    return rows;
+  }
+
+  function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e;}
+
+  function render(){
+    const rows=visible(), body=$("body");
+    body.textContent="";
+    const frag=document.createDocumentFragment();
+    rows.forEach(b=>{
+      const tr=document.createElement("tr");
+      if(state.sel.has(b.rank))tr.className="sel";
+      const c=el("td","chk"), cb=document.createElement("input");
+      cb.type="checkbox";cb.checked=state.sel.has(b.rank);
+      cb.setAttribute("aria-label","Add "+b.title+" to shortlist");
+      cb.addEventListener("change",()=>{cb.checked?state.sel.add(b.rank):state.sel.delete(b.rank);persist();
+        if(state.only){render();}else{tr.classList.toggle("sel",cb.checked);updateBar();}});
+      c.appendChild(cb);tr.appendChild(c);
+      tr.appendChild(el("td","rank",b.rank));
+      const t=el("td","title"); t.appendChild(el("span","t",b.title)); t.appendChild(el("span","b",b.blurb)); tr.appendChild(t);
+      tr.appendChild(el("td","author",b.author));
+      tr.appendChild(el("td","year",b.year));
+      tr.appendChild(el("td","genre",b.genre));
+      const f=el("td","find");
+      links(b).forEach(([n,u])=>{const a=el("a",null,n);a.href=u;a.target="_blank";a.rel="noopener noreferrer";a.setAttribute("aria-label",n+" search for "+b.title);f.appendChild(a);});
+      tr.appendChild(f);
+      frag.appendChild(tr);
+    });
+    body.appendChild(frag);
+    $("empty").hidden=rows.length>0;
+    $("count").textContent="Showing "+rows.length+" of "+DATA.length;
+    document.querySelectorAll("thead th button").forEach(btn=>{
+      const on=btn.dataset.k===state.key;
+      btn.querySelector(".arrow").textContent=on?(state.dir===1?"▲":"▼"):"";
+      btn.parentElement.setAttribute("aria-sort",on?(state.dir===1?"ascending":"descending"):"none");
+    });
+    updateBar();
+  }
+
+  function chosen(){return DATA.filter(b=>state.sel.has(b.rank)).sort((a,b)=>a.rank-b.rank);}
+
+  function updateBar(){
+    const n=state.sel.size;
+    $("selN").textContent="Shortlist: "+n+(n===1?" book":" books");
+    ["print","copy","csv","clear"].forEach(id=>$(id).disabled=n===0);
+  }
+
+  function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("show"),2200);}
+
+  document.querySelectorAll("thead th button").forEach(btn=>btn.addEventListener("click",()=>{
+    const k=btn.dataset.k;
+    if(state.key===k)state.dir=-state.dir;else{state.key=k;state.dir=1;}
+    render();
+  }));
+  $("q").addEventListener("input",e=>{state.q=e.target.value;render();});
+  $("genre").addEventListener("change",e=>{state.genre=e.target.value;render();});
+  $("onlySel").addEventListener("click",e=>{state.only=!state.only;e.currentTarget.setAttribute("aria-pressed",state.only);e.currentTarget.textContent=state.only?"Show all books":"Show shortlist only";render();});
+  $("reset").addEventListener("click",()=>{state.key="rank";state.dir=1;state.q="";state.genre="";state.only=false;$("q").value="";$("genre").value="";$("onlySel").setAttribute("aria-pressed","false");$("onlySel").textContent="Show shortlist only";render();});
+  $("clear").addEventListener("click",()=>{if(state.sel.size&&confirm("Clear your shortlist?")){state.sel.clear();persist();render();}});
+
+  $("copy").addEventListener("click",()=>{
+    const txt=chosen().map(b=>b.rank+". "+b.title+" - "+b.author+" ("+b.year+")").join("\n");
+    const done=()=>toast("Shortlist copied");
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,()=>fallback(txt,done));}else fallback(txt,done);
+  });
+  function fallback(txt,done){const ta=document.createElement("textarea");ta.value=txt;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");done();}catch(e){toast("Copy failed");}document.body.removeChild(ta);}
+
+  $("csv").addEventListener("click",()=>{
+    const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
+    const lines=[["Rank","Title","Author","Year","Genre"].join(",")].concat(chosen().map(b=>[b.rank,q(b.title),q(b.author),b.year,q(b.genre)].join(",")));
+    const blob=new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="abc-top-100-shortlist.csv";document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  });
+
+  $("print").addEventListener("click",()=>{
+    const ps=$("printSheet");ps.textContent="";
+    ps.appendChild(el("h1",null,"My reading shortlist"));
+    ps.appendChild(el("p","sub","From the ABC Radio National Top 100 Australian books. Printed "+new Date().toLocaleDateString("en-AU",{day:"numeric",month:"long",year:"numeric"})+"."));
+    const t=document.createElement("table"),h=document.createElement("tr");
+    ["","Rank","Title","Author","Year"].forEach(x=>h.appendChild(el("th",null,x)));
+    const th=document.createElement("thead");th.appendChild(h);t.appendChild(th);
+    const tb=document.createElement("tbody");
+    chosen().forEach(b=>{const r=document.createElement("tr");
+      r.appendChild(el("td","box","☐"));r.appendChild(el("td",null,b.rank));
+      const c=el("td",null,null);c.appendChild(el("strong",null,b.title));c.appendChild(document.createElement("br"));c.appendChild(el("span","sub",b.genre));r.appendChild(c);
+      r.appendChild(el("td",null,b.author));r.appendChild(el("td",null,b.year));tb.appendChild(r);});
+    t.appendChild(tb);ps.appendChild(t);
+    document.body.classList.add("print-shortlist");
+    window.addEventListener("afterprint",()=>document.body.classList.remove("print-shortlist"),{once:true});
+    window.print();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
